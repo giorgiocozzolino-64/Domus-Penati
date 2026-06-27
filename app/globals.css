@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-casa-night font-body text-casa-dark;
+    min-height: 100dvh;
+  }
+
+  /* Form elements inherit font */
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+  }
+
+  /* Rimuovi stili default Safari su input */
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Focus visibile accessibile */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-casa-gold;
+  }
+}
+
+@layer components {
+  /* Shell dell'app – contenitore centrato mobile-first */
+  .casa-shell {
+    @apply mx-auto w-full max-w-casa min-h-[100dvh] bg-casa-cream flex flex-col;
+  }
+
+  /* Padding standard per le pagine */
+  .casa-page {
+    @apply px-10 flex flex-col flex-1;
+  }
+
+  /* Hero homepage – sfondo notturno */
+  .casa-hero-bg {
+    background-color: #170F06;
+    background-image: radial-gradient(
+      ellipse 52% 62% at 50% 36%,
+      rgba(100, 58, 12, 0.28) 0%,
+      rgba(60, 28, 4, 0.08) 50%,
+      transparent 75%
+    );
+  }
+
+  /* Linea di campo form */
+  .casa-input-line {
+    @apply w-full bg-transparent border-0 border-b border-casa-border
+           pb-[11px] text-body font-body text-casa-dark
+           placeholder:text-casa-muted
+           focus:outline-none focus:border-casa-gold
+           transition-colors duration-200;
+  }
+
+  /* Stato opacity zero per animazioni con delay */
+  .animate-opacity-0 {
+    opacity: 0;
+  }
+}
