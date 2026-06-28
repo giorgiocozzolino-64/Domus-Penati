@@ -10,7 +10,12 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { copy } from '@/lib/copy'
 
-async function getFamilyData(userId: string) {
+type FamilyData = {
+  id: string
+  name: string
+}
+
+async function getFamilyData(userId: string): Promise<FamilyData | null> {
   const supabase = await createClient()
 
   const { data: membership } = await supabase
@@ -18,33 +23,35 @@ async function getFamilyData(userId: string) {
     .select('families(id, name)')
     .eq('user_id', userId)
     .limit(1)
-    .single()
+    .maybeSingle()
 
-  return membership?.families as { id: string; name: string } | null
+  if (!membership) {
+    return null
+  }
+
+  return membership.families as FamilyData | null
 }
 
 export default async function WelcomePage() {
   const c = copy.welcome
   const supabase = await createClient()
 
-  // Verifica autenticazione
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  // Recupera dati famiglia
+  if (!user) {
+    redirect('/login')
+  }
+
   const family = await getFamilyData(user.id)
   const familyName = family?.name ?? ''
 
-  const greeting = familyName
-    ? c.greeting(familyName)
-    : c.greetingAlt
+  const greeting = familyName ? c.greeting(familyName) : c.greetingAlt
 
   return (
     <main className="mx-auto w-full max-w-casa min-h-[100dvh] bg-casa-cream flex flex-col">
-      {/* Contenuto centrato verticalmente */}
       <section className="flex-1 flex flex-col items-center justify-center px-11 pt-16 pb-12 text-center">
-
-        {/* Icona casa – soglia della Domus */}
         <div
           className="w-[72px] h-[72px] rounded-full flex items-center justify-center mb-11"
           style={{ background: 'rgba(168,128,48,0.12)' }}
@@ -66,30 +73,25 @@ export default async function WelcomePage() {
           </svg>
         </div>
 
-        {/* Saluto della casa */}
-        <h1 className="font-serif text-title text-casa-dark">
-          {greeting}
-        </h1>
+        <h1 className="font-serif text-title text-casa-dark">{greeting}</h1>
 
-        {/* Titolo */}
         <p className="mt-2 font-serif text-[18px] text-casa-dark font-normal italic">
           {c.title}
         </p>
 
-        {/* Sottotitolo */}
         <p className="mt-4 font-body text-small text-casa-mid leading-[1.9] max-w-[290px]">
           {c.subtitle.split('\n').map((line, i) => (
-            <span key={i} className="block">{line}</span>
+            <span key={i} className="block">
+              {line}
+            </span>
           ))}
         </p>
 
-        {/* Nota stato vuoto */}
         <p className="mt-8 font-body text-[13px] text-casa-light italic">
           {c.empty.note}
         </p>
       </section>
 
-      {/* Azioni in basso */}
       <div className="px-10 pb-14 flex flex-col gap-3 flex-shrink-0">
         <Link
           href="/domus/primo-ricordo"
