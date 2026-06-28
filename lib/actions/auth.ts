@@ -11,6 +11,14 @@ type RegisterFamilyInput = {
   familyName: string
 }
 
+function createSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 export async function registerFamily(data: RegisterFamilyInput) {
   const supabase = await createClient()
   const db = supabase as any
@@ -52,14 +60,17 @@ export async function registerFamily(data: RegisterFamilyInput) {
   }
 
   const userId = authData.user.id
+  const slug = createSlug(familyName)
 
   const { data: family, error: familyError } = await db
     .from('families')
     .insert({
-      name: familyName,
+      family_name: familyName,
+      slug,
+      owner_id: userId,
       created_by: userId,
     })
-    .select('id, name')
+    .select('id, family_name, slug')
     .single()
 
   if (familyError || !family?.id) {
@@ -75,7 +86,9 @@ export async function registerFamily(data: RegisterFamilyInput) {
   const { error: memberError } = await db.from('family_members').insert({
     family_id: family.id,
     user_id: userId,
+    email,
     role: 'owner',
+    status: 'active',
   })
 
   if (memberError) {
