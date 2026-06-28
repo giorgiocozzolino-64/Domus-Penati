@@ -13,26 +13,11 @@ export const copy = {
     loginLink: "Ho già una Domus",
 
     fields: {
-      firstName: {
-        label: "Il tuo nome",
-        placeholder: "Mario",
-      },
-      lastName: {
-        label: "Il tuo cognome",
-        placeholder: "Rossi",
-      },
-      email: {
-        label: "Email",
-        placeholder: "nome@email.com",
-      },
-      password: {
-        label: "Password",
-        placeholder: "Minimo 8 caratteri",
-      },
-      familyName: {
-        label: "Nome della famiglia",
-        placeholder: "Famiglia Rossi",
-      },
+      firstName: { label: "Il tuo nome", placeholder: "Mario" },
+      lastName: { label: "Il tuo cognome", placeholder: "Rossi" },
+      email: { label: "Email", placeholder: "nome@email.com" },
+      password: { label: "Password", placeholder: "Minimo 8 caratteri" },
+      familyName: { label: "Nome della famiglia", placeholder: "Famiglia Rossi" },
     },
 
     errors: {
@@ -47,14 +32,8 @@ export const copy = {
     registerLink: "Non hai ancora una Domus?",
 
     fields: {
-      email: {
-        label: "Email",
-        placeholder: "nome@email.com",
-      },
-      password: {
-        label: "Password",
-        placeholder: "La tua password",
-      },
+      email: { label: "Email", placeholder: "nome@email.com" },
+      password: { label: "Password", placeholder: "La tua password" },
     },
 
     errors: {
@@ -70,7 +49,6 @@ export const copy = {
       "Qui inizierai a custodire i ricordi della tua famiglia.\nOgni momento importante resterà per sempre.",
     cta: "Crea il primo ricordo",
     secondaryCta: "Invita un familiare",
-
     empty: {
       note: "Non ci sono ancora ricordi. Il primo aspetta solo te.",
     },
@@ -85,8 +63,9 @@ export const copy = {
 
     record: {
       label: "Registra un ricordo vocale",
-      stop: "Ferma registrazione",
       start: "Inizia registrazione",
+      stop: "Ferma registrazione",
+      note: "Puoi aggiungere la tua voce per rendere questo ricordo ancora più vivo.",
     },
 
     fields: {
