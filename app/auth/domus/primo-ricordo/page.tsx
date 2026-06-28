@@ -78,7 +78,7 @@ export default function PrimoRicordoPage() {
         throw new Error('Famiglia non trovata')
       }
 
-      const fileExtension = file.name.split('.').pop()
+      const fileExtension = file.name.split('.').pop() || 'file'
       const storagePath = `${membership.family_id}/${user.id}/${Date.now()}.${fileExtension}`
 
       const { error: storageError } = await supabase.storage
@@ -132,10 +132,17 @@ export default function PrimoRicordoPage() {
 
       setUploadState('success')
       setTimeout(() => router.push('/auth/domus/ricordi'), 800)
-    } catch (err) {
-      console.error('Errore creazione ricordo:', err)
+    } catch (err: any) {
+      console.error('========== ERRORE DOMUS ==========')
+      console.error(err)
+      console.error('message:', err?.message)
+      console.error('details:', err?.details)
+      console.error('hint:', err?.hint)
+      console.error('code:', err?.code)
+      console.error('===============================')
+
       setUploadState('error')
-      setErrorMessage(c.errors.upload)
+      setErrorMessage(err?.message ?? c.errors.upload)
     }
   }
 
