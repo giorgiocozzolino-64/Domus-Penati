@@ -13,6 +13,7 @@ type RegisterFamilyInput = {
 
 export async function registerFamily(data: RegisterFamilyInput) {
   const supabase = await createClient()
+  const db = supabase as any
 
   const firstName = data.firstName?.trim()
   const lastName = data.lastName?.trim()
@@ -50,7 +51,7 @@ export async function registerFamily(data: RegisterFamilyInput) {
 
   const userId = authData.user.id
 
-  const { data: family, error: familyError } = await supabase
+  const { data: family, error: familyError } = await db
     .from('families')
     .insert({
       name: familyName,
@@ -67,7 +68,7 @@ export async function registerFamily(data: RegisterFamilyInput) {
     }
   }
 
-  const { error: memberError } = await supabase.from('family_members').insert({
+  const { error: memberError } = await db.from('family_members').insert({
     family_id: family.id,
     user_id: userId,
     role: 'owner',
