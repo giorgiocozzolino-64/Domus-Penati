@@ -37,9 +37,9 @@ async function updateMemory(formData: FormData) {
     return
   }
 
-  const { error } = await supabase
-    .from('memories')
-    .update({
+   const { error } = await (supabase as any)
+  .from('memories')
+  .update({
       title,
       description: description || null,
       date_of_memory: dateOfMemory || null,
