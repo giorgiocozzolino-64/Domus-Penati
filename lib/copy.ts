@@ -83,6 +83,12 @@ export const copy = {
     cta: "Salva il ricordo",
     back: "Torna alla Domus",
 
+    record: {
+      label: "Registra un ricordo vocale",
+      stop: "Ferma registrazione",
+      start: "Inizia registrazione",
+    },
+
     fields: {
       title: {
         label: "Titolo del ricordo",
