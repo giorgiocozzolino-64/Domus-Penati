@@ -93,4 +93,30 @@ export const copy = {
 
     success: "Il primo ricordo è stato salvato.",
   },
+
+  gallery: {
+    title: "I vostri ricordi",
+    subtitle: "La memoria della vostra famiglia, raccolta nella vostra Domus.",
+    back: "Torna alla Domus",
+    add: "Aggiungi",
+
+    types: {
+      video: "Video",
+      audio: "Audio",
+      photo: "Foto",
+      document: "Documento",
+      text: "Testo",
+    },
+
+    empty: {
+      title: "Nessun ricordo ancora",
+      subtitle:
+        "Ogni famiglia ha un primo ricordo da custodire. Inizia con una foto, una voce o un video.",
+      cta: "Crea il primo ricordo",
+    },
+
+    errors: {
+      load: "Non è stato possibile caricare i ricordi. Riprova.",
+    },
+  },
 }

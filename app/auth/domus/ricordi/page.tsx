@@ -12,10 +12,8 @@ import { copy } from '@/lib/copy'
 import type { Memory, MemoryType } from '@/types/supabase'
 import { SimpleHeader } from '@/components/ui'
 
-// ── Icone per tipo di ricordo ─────────────────────────────────
-
 function MemoryTypeIcon({ type }: { type: MemoryType }) {
-  const icons: Record<MemoryType, JSX.Element> = {
+  const icons: Record<MemoryType, React.ReactNode> = {
     video: (
       <svg width="22" height="22" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="7" width="18" height="14" rx="2" />
@@ -51,17 +49,19 @@ function MemoryTypeIcon({ type }: { type: MemoryType }) {
       </svg>
     ),
   }
+
   return icons[type] ?? icons.document
 }
-
-// ── Voce singola ricordo ──────────────────────────────────────
 
 function MemoryItem({ memory }: { memory: Memory }) {
   const c = copy.gallery
   const typeLabel = c.types[memory.type] ?? memory.type
   const date = memory.year
     ? `${memory.year}`
-    : new Date(memory.created_at).toLocaleDateString('it-IT', { year: 'numeric', month: 'long' })
+    : new Date(memory.created_at).toLocaleDateString('it-IT', {
+        year: 'numeric',
+        month: 'long',
+      })
 
   return (
     <div className="border-b border-casa-border last:border-b-0 py-4 flex items-center gap-4 cursor-pointer hover:bg-casa-cream-deep/50 -mx-2 px-2 rounded-[6px] transition-colors duration-150">
@@ -71,10 +71,12 @@ function MemoryItem({ memory }: { memory: Memory }) {
       >
         <MemoryTypeIcon type={memory.type} />
       </div>
+
       <div className="flex-1 min-w-0">
         <p className="font-body text-[14px] text-casa-dark leading-[1.4] truncate">
           {memory.title}
         </p>
+
         <p className="font-ui text-[11px] text-casa-light tracking-[0.04em] mt-1">
           {typeLabel} · {date}
           {memory.location ? ` · ${memory.location}` : ''}
@@ -84,32 +86,33 @@ function MemoryItem({ memory }: { memory: Memory }) {
   )
 }
 
-// ── Placeholder foto per la griglia ──────────────────────────
-
 const PLACEHOLDER_TILES = [
-  { gradient: 'linear-gradient(155deg, #C0AA80 0%, #9A8060 100%)', year: '1962 · Napoli'  },
+  { gradient: 'linear-gradient(155deg, #C0AA80 0%, #9A8060 100%)', year: '1962 · Napoli' },
   { gradient: 'linear-gradient(155deg, #B0987A 0%, #8A7458 100%)', year: '1978 · Firenze' },
   { gradient: 'linear-gradient(155deg, #BCAA88 0%, #9A8868 100%)', year: '1990 · Sicilia' },
 ]
-
-// ── Schermata principale ──────────────────────────────────────
 
 export default async function GalleryPage() {
   const c = copy.gallery
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  // Recupera ID famiglia
-  const { data: membership } = await supabase
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: membershipData } = await supabase
     .from('family_members')
     .select('family_id')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  // Recupera ricordi
-  const { data: memories, error } = membership?.family_id
+  const membership = membershipData as { family_id: string | null } | null
+
+  const { data: memoriesData, error } = membership?.family_id
     ? await supabase
         .from('memories')
         .select('*')
@@ -117,30 +120,31 @@ export default async function GalleryPage() {
         .order('created_at', { ascending: false })
     : { data: [], error: null }
 
-  const hasMemories = memories && memories.length > 0
+  const memories = (memoriesData ?? []) as Memory[]
+  const hasMemories = memories.length > 0
 
   return (
     <main className="mx-auto w-full max-w-casa min-h-[100dvh] bg-casa-cream flex flex-col">
       <SimpleHeader back={{ href: '/domus', label: c.back }} />
 
       <div className="flex-1 overflow-y-auto pb-8">
-
-        {/* Intestazione */}
         <div className="px-10 pt-8 pb-6">
           <h1 className="font-serif text-h2 text-casa-dark">{c.title}</h1>
-          <p className="mt-1 font-body text-small text-casa-mid italic">{c.subtitle}</p>
+          <p className="mt-1 font-body text-small text-casa-mid italic">
+            {c.subtitle}
+          </p>
         </div>
 
-        {/* Stato di errore */}
         {error && (
           <div className="px-10 mb-6">
             <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-[6px]">
-              <p className="font-body text-small text-red-700">{c.errors.load}</p>
+              <p className="font-body text-small text-red-700">
+                {c.errors.load}
+              </p>
             </div>
           </div>
         )}
 
-        {/* ── STATO VUOTO ── */}
         {!error && !hasMemories && (
           <div className="px-10 flex flex-col items-center text-center pt-8 pb-4">
             <div
@@ -153,12 +157,15 @@ export default async function GalleryPage() {
                 <path d="M10 5V3m8 2V3" />
               </svg>
             </div>
+
             <h2 className="font-serif text-[20px] font-normal text-casa-dark mb-3">
               {c.empty.title}
             </h2>
+
             <p className="font-body text-small text-casa-mid italic leading-[1.9] mb-10 max-w-[240px]">
               {c.empty.subtitle}
             </p>
+
             <Link
               href="/domus/primo-ricordo"
               className="inline-flex items-center justify-center font-body text-[15px] font-medium tracking-wide text-casa-cream bg-casa-gold hover:bg-casa-gold-dark rounded-button px-10 py-[14px] transition-colors duration-200"
@@ -168,10 +175,8 @@ export default async function GalleryPage() {
           </div>
         )}
 
-        {/* ── CON CONTENUTO ── */}
         {!error && hasMemories && (
           <>
-            {/* Griglia foto con placeholder visivi */}
             <div className="grid grid-cols-2 gap-2 px-10 mb-6">
               {PLACEHOLDER_TILES.map((tile, i) => (
                 <div
@@ -179,14 +184,20 @@ export default async function GalleryPage() {
                   className="rounded-[8px] overflow-hidden relative cursor-pointer"
                   style={{ aspectRatio: '0.82', background: tile.gradient }}
                 >
-                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 pt-8"
-                    style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.42))' }}>
-                    <p className="font-ui text-[10px] tracking-[0.07em] uppercase text-white/80">{tile.year}</p>
+                  <div
+                    className="absolute bottom-0 left-0 right-0 px-3 pb-2 pt-8"
+                    style={{
+                      background:
+                        'linear-gradient(transparent, rgba(0,0,0,0.42))',
+                    }}
+                  >
+                    <p className="font-ui text-[10px] tracking-[0.07em] uppercase text-white/80">
+                      {tile.year}
+                    </p>
                   </div>
                 </div>
               ))}
 
-              {/* Tile aggiungi */}
               <Link
                 href="/domus/primo-ricordo"
                 className="border border-dashed border-casa-border rounded-[8px] flex flex-col items-center justify-center gap-2 hover:border-casa-gold transition-colors duration-200"
@@ -197,11 +208,13 @@ export default async function GalleryPage() {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                <span className="font-body text-[12px] text-casa-light tracking-[0.04em]">{c.add}</span>
+
+                <span className="font-body text-[12px] text-casa-light tracking-[0.04em]">
+                  {c.add}
+                </span>
               </Link>
             </div>
 
-            {/* Lista ricordi */}
             <div className="px-10">
               {memories.map((memory) => (
                 <MemoryItem key={memory.id} memory={memory} />
