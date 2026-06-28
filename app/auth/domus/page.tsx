@@ -12,7 +12,8 @@ import { copy } from '@/lib/copy'
 
 type FamilyData = {
   id: string
-  name: string
+  family_name: string
+  slug: string | null
 }
 
 type MembershipData = {
@@ -22,32 +23,37 @@ type MembershipData = {
 async function getFamilyData(userId: string): Promise<FamilyData | null> {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  const { data: membershipData, error: membershipError } = await supabase
     .from('family_members')
     .select('family_id')
     .eq('user_id', userId)
+    .eq('status', 'active')
     .limit(1)
     .maybeSingle()
 
-  const membership = data as MembershipData | null
-
-  if (!membership || !membership.family_id) {
+  if (membershipError) {
+    console.error('Errore recupero membership:', membershipError.message)
     return null
   }
 
-  const { data: familyData } = await supabase
+  const membership = membershipData as MembershipData | null
+
+  if (!membership?.family_id) {
+    return null
+  }
+
+  const { data: familyData, error: familyError } = await supabase
     .from('families')
-    .select('id, name')
+    .select('id, family_name, slug')
     .eq('id', membership.family_id)
     .maybeSingle()
 
-  const family = familyData as FamilyData | null
-
-  if (!family) {
+  if (familyError) {
+    console.error('Errore recupero famiglia:', familyError.message)
     return null
   }
 
-  return family
+  return familyData as FamilyData | null
 }
 
 export default async function WelcomePage() {
@@ -63,7 +69,7 @@ export default async function WelcomePage() {
   }
 
   const family = await getFamilyData(user.id)
-  const familyName = family?.name ?? ''
+  const familyName = family?.family_name ?? ''
 
   const greeting = familyName ? c.greeting(familyName) : c.greetingAlt
 
