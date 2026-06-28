@@ -1,8 +1,5 @@
 /**
  * SCHERMATA 4 – BENVENUTO NELLA DOMUS
- * La prima volta che l'utente entra nella propria casa.
- *
- * Server Component – recupera i dati della famiglia da Supabase.
  */
 
 import Link from 'next/link'
@@ -118,14 +115,14 @@ export default async function WelcomePage() {
 
       <div className="px-10 pb-14 flex flex-col gap-3 flex-shrink-0">
         <Link
-          href="/domus/primo-ricordo"
+          href="/auth/domus/primo-ricordo"
           className="flex items-center justify-center w-full font-body text-[15px] font-medium tracking-wide text-casa-cream bg-casa-gold hover:bg-casa-gold-dark rounded-button px-6 py-[14px] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-casa-gold focus-visible:ring-offset-2"
         >
           {c.cta}
         </Link>
 
         <Link
-          href="/domus/invita"
+          href="/auth/domus/invita"
           className="flex items-center justify-center w-full font-body text-[15px] font-medium tracking-wide text-casa-gold border border-casa-border hover:bg-casa-gold-light rounded-button px-6 py-[13px] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-casa-gold focus-visible:ring-offset-2"
         >
           {c.secondaryCta}
