@@ -71,4 +71,22 @@ export const copy = {
       generic: "Accesso non riuscito. Controlla i dati e riprova.",
     },
   },
+
+  welcome: {
+    greeting: (familyName: string) => `Benvenuto nella Domus ${familyName}.`,
+    greetingAlt: "Benvenuto nella tua Domus.",
+
+    title: "La tua casa digitale è pronta.",
+
+    subtitle:
+      "Qui inizierai a custodire i ricordi della tua famiglia.\nOgni momento importante resterà per sempre.",
+
+    cta: "Crea il primo ricordo",
+
+    secondaryCta: "Invita un familiare",
+
+    empty: {
+      note: "Non ci sono ancora ricordi. Il primo aspetta solo te.",
+    },
+  },
 }
