@@ -55,18 +55,18 @@ export const copy = {
   },
 
   firstMemory: {
-    title: "Crea il primo ricordo",
-    subtitle:
-      "Ogni famiglia ha un momento da cui tutto comincia. Scrivi il primo ricordo della tua Domus.",
+    title: "Di chi vuoi conservare il ricordo?",
+    subtitle: "Registra un video, una voce, una foto o un documento da custodire nella tua Domus.",
     cta: "Salva il ricordo",
     back: "Torna alla Domus",
     or: "oppure",
+    upload: "Carica un file",
 
     record: {
-      label: "Registra un ricordo vocale",
+      label: "Registra",
       start: "Inizia registrazione",
       stop: "Ferma registrazione",
-      note: "Puoi aggiungere la tua voce per rendere questo ricordo ancora più vivo.",
+      note: "Puoi registrare un video direttamente dal tuo dispositivo.",
     },
 
     fields: {
@@ -88,7 +88,7 @@ export const copy = {
 
     errors: {
       generic: "Non è stato possibile salvare il ricordo. Riprova.",
-      upload: "Non è stato possibile caricare la foto. Riprova.",
+      upload: "Non è stato possibile caricare il file. Riprova.",
     },
 
     success: "Il primo ricordo è stato salvato.",
