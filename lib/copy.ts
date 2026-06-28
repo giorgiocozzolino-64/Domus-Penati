@@ -102,6 +102,7 @@ export const copy = {
 
     errors: {
       generic: "Non è stato possibile salvare il ricordo. Riprova.",
+      upload: "Non è stato possibile caricare la foto. Riprova.",
     },
 
     success: "Il primo ricordo è stato salvato.",
