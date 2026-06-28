@@ -1,9 +1,106 @@
-"use server";
+'use server'
 
-export async function registerFamily(_data: unknown) {
-  return {
-    success: true,
-    error: null,
-    fieldErrors: null,
-  };
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+
+type RegisterFamilyInput = {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  familyName: string
+}
+
+export async function registerFamily(data: RegisterFamilyInput) {
+  const supabase = await createClient()
+
+  const firstName = data.firstName?.trim()
+  const lastName = data.lastName?.trim()
+  const email = data.email?.trim().toLowerCase()
+  const password = data.password
+  const familyName = data.familyName?.trim()
+
+  if (!firstName || !lastName || !email || !password || !familyName) {
+    return {
+      success: false,
+      error: 'Compila tutti i campi obbligatori.',
+      fieldErrors: null,
+    }
+  }
+
+  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`,
+      },
+    },
+  })
+
+  if (signUpError || !authData.user) {
+    return {
+      success: false,
+      error: signUpError?.message ?? 'Registrazione non riuscita.',
+      fieldErrors: null,
+    }
+  }
+
+  const userId = authData.user.id
+
+  const { data: family, error: familyError } = await supabase
+    .from('families')
+    .insert({
+      name: familyName,
+      created_by: userId,
+    })
+    .select('id')
+    .single()
+
+  if (familyError || !family) {
+    return {
+      success: false,
+      error: familyError?.message ?? 'Famiglia non creata.',
+      fieldErrors: null,
+    }
+  }
+
+  const { error: memberError } = await supabase.from('family_members').insert({
+    family_id: family.id,
+    user_id: userId,
+    role: 'owner',
+  })
+
+  if (memberError) {
+    return {
+      success: false,
+      error: memberError.message,
+      fieldErrors: null,
+    }
+  }
+
+  redirect('/auth/domus')
+}
+
+export async function login(data: { email: string; password: string }) {
+  const supabase = await createClient()
+
+  const email = data.email?.trim().toLowerCase()
+  const password = data.password
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    }
+  }
+
+  redirect('/auth/domus')
 }
