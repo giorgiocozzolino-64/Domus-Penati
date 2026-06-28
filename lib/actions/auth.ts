@@ -44,7 +44,9 @@ export async function registerFamily(data: RegisterFamilyInput) {
   if (signUpError || !authData.user) {
     return {
       success: false,
-      error: signUpError?.message ?? 'Registrazione non riuscita.',
+      error: `Errore registrazione utente: ${
+        signUpError?.message ?? 'utente non creato'
+      }`,
       fieldErrors: null,
     }
   }
@@ -57,13 +59,15 @@ export async function registerFamily(data: RegisterFamilyInput) {
       name: familyName,
       created_by: userId,
     })
-    .select('id')
+    .select('id, name')
     .single()
 
-  if (familyError || !family) {
+  if (familyError || !family?.id) {
     return {
       success: false,
-      error: familyError?.message ?? 'Famiglia non creata.',
+      error: `Errore creazione famiglia: ${
+        familyError?.message ?? 'famiglia non creata'
+      }`,
       fieldErrors: null,
     }
   }
@@ -77,7 +81,7 @@ export async function registerFamily(data: RegisterFamilyInput) {
   if (memberError) {
     return {
       success: false,
-      error: memberError.message,
+      error: `Errore creazione membro famiglia: ${memberError.message}`,
       fieldErrors: null,
     }
   }
@@ -90,6 +94,13 @@ export async function login(data: { email: string; password: string }) {
 
   const email = data.email?.trim().toLowerCase()
   const password = data.password
+
+  if (!email || !password) {
+    return {
+      success: false,
+      error: 'Inserisci email e password.',
+    }
+  }
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
