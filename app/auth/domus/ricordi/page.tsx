@@ -34,6 +34,11 @@ type Memory = {
   memory_files: MemoryFile[]
 }
 
+type MemoryCard = {
+  memory: Memory
+  signedUrl: string | null
+}
+
 function formatDate(value: string | null) {
   if (!value) return 'Data non indicata'
 
@@ -178,19 +183,36 @@ export default async function GalleryPage() {
   const memories = (memoriesData ?? []) as Memory[]
   const hasMemories = memories.length > 0
 
-  const memoryCards = memories.map((memory) => {
-    const firstFile = memory.memory_files?.[0]
-    const filePath = firstFile?.file_url ?? null
+  const memoryCards: MemoryCard[] = await Promise.all(
+    memories.map(async (memory) => {
+      const firstFile = memory.memory_files?.[0]
+      const filePath = firstFile?.file_url ?? null
 
-    const publicUrl = filePath
-      ? supabase.storage.from('memories').getPublicUrl(filePath).data.publicUrl
-      : null
+      if (!filePath) {
+        return {
+          memory,
+          signedUrl: null,
+        }
+      }
 
-    return {
-      memory,
-      publicUrl,
-    }
-  })
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('memories')
+        .createSignedUrl(filePath, 60 * 60)
+
+      if (signedError) {
+        console.error('Errore signed URL:', signedError.message)
+        return {
+          memory,
+          signedUrl: null,
+        }
+      }
+
+      return {
+        memory,
+        signedUrl: signedData?.signedUrl ?? null,
+      }
+    })
+  )
 
   return (
     <main className="mx-auto w-full max-w-casa min-h-[100dvh] bg-casa-cream flex flex-col">
@@ -243,7 +265,7 @@ export default async function GalleryPage() {
       {!memoriesError && hasMemories && (
         <section className="px-10 pb-10">
           <div className="grid grid-cols-2 gap-3 mb-8">
-            {memoryCards.map(({ memory, publicUrl }) => (
+            {memoryCards.map(({ memory, signedUrl }) => (
               <article
                 key={memory.id}
                 className="rounded-[10px] overflow-hidden bg-white/40 border border-casa-border"
@@ -252,7 +274,7 @@ export default async function GalleryPage() {
                   className="relative overflow-hidden bg-casa-gold-light"
                   style={{ aspectRatio: '0.82' }}
                 >
-                  <MemoryPreview memory={memory} fileUrl={publicUrl} />
+                  <MemoryPreview memory={memory} fileUrl={signedUrl} />
                 </div>
 
                 <div className="p-3">
