@@ -15,34 +15,39 @@ type FamilyData = {
   name: string
 }
 
+type MembershipData = {
+  family_id: string | null
+}
+
 async function getFamilyData(userId: string): Promise<FamilyData | null> {
   const supabase = await createClient()
 
-  const { data: membership } = await supabase
+  const { data } = await supabase
     .from('family_members')
     .select('family_id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle()
 
-  if (!membership?.family_id) {
+  const membership = data as MembershipData | null
+
+  if (!membership || !membership.family_id) {
     return null
   }
 
-  const { data: family } = await supabase
+  const { data: familyData } = await supabase
     .from('families')
     .select('id, name')
     .eq('id', membership.family_id)
     .maybeSingle()
 
+  const family = familyData as FamilyData | null
+
   if (!family) {
     return null
   }
 
-  return {
-    id: family.id,
-    name: family.name,
-  }
+  return family
 }
 
 export default async function WelcomePage() {
