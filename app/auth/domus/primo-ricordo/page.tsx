@@ -2,9 +2,6 @@
 
 /**
  * SCHERMATA 5 – PRIMO RICORDO
- * "Di chi vuoi conservare il ricordo?"
- *
- * Client Component – gestisce upload file e registrazione video.
  */
 
 import { useState, useRef } from 'react'
@@ -19,6 +16,10 @@ import { createClient } from '@/lib/supabase/client'
 import { copy } from '@/lib/copy'
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error'
+
+type MembershipData = {
+  family_id: string | null
+}
 
 export default function PrimoRicordoPage() {
   const c = copy.firstMemory
@@ -37,64 +38,68 @@ export default function PrimoRicordoPage() {
     setErrorMessage(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
-      // Upload del file su Supabase Storage
-      const extension = file.name.split('.').pop()
-      const filename = `${user.id}/${Date.now()}.${extension}`
+      if (userError || !user) {
+        router.push('/login')
+        return
+      }
 
-      const { error: storageError } = await supabase.storage
-        .from('memories')
-        .upload(filename, file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
+      const memoryType = file.type.startsWith('video/')
+        ? 'video'
+        : file.type.startsWith('audio/')
+          ? 'audio'
+          : file.type.startsWith('image/')
+            ? 'photo'
+            : 'document'
 
-      if (storageError) throw storageError
-
-      // Determina il tipo di ricordo dal MIME type
-      const type = file.type.startsWith('video/')    ? 'video'
-                 : file.type.startsWith('audio/')    ? 'audio'
-                 : file.type.startsWith('image/')    ? 'photo'
-                 : 'document'
-
-      // Recupera l'ID famiglia
-      const { data: membership } = await supabase
+      const { data: membershipData, error: membershipError } = await supabase
         .from('family_members')
         .select('family_id')
         .eq('user_id', user.id)
-        .single()
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle()
 
-      if (!membership?.family_id) throw new Error('Famiglia non trovata')
+      if (membershipError) {
+        throw membershipError
+      }
 
-      // Salva il ricordo nel database
-      const { error: dbError } = await supabase
-        .from('memories')
-        .insert({
-          family_id:    membership.family_id,
-          title:        file.name.replace(/\.[^/.]+$/, ''),
-          type,
-          storage_path: filename,
-          created_by:   user.id,
-        })
+      const membership = membershipData as MembershipData | null
 
-      if (dbError) throw dbError
+      if (!membership?.family_id) {
+        throw new Error('Famiglia non trovata')
+      }
+
+      const cleanTitle = file.name.replace(/\.[^/.]+$/, '')
+
+      const { error: dbError } = await supabase.from('memories').insert({
+        family_id: membership.family_id,
+        author_id: user.id,
+        title: cleanTitle,
+        description: null,
+        memory_type: memoryType,
+        visibility: 'family',
+        date_of_memory: new Date().toISOString().slice(0, 10),
+      })
+
+      if (dbError) {
+        throw dbError
+      }
 
       setUploadState('success')
-      // Piccolo delay prima del redirect per permettere all'utente di vedere il successo
       setTimeout(() => router.push('/domus/ricordi'), 800)
-
     } catch (err) {
-      console.error('Errore upload:', err)
+      console.error('Errore creazione ricordo:', err)
       setUploadState('error')
       setErrorMessage(c.errors.upload)
     }
   }
 
   function handleRecordClick() {
-    // TODO: implementare registrazione video nativa
-    // Per MVP, apre il file picker con filtro video
     if (fileInputRef.current) {
       fileInputRef.current.accept = 'video/*'
       fileInputRef.current.capture = 'user'
@@ -114,9 +119,8 @@ export default function PrimoRicordoPage() {
 
   return (
     <PageShell>
-      <SimpleHeader back={{ href: '/domus', label: c.back }} />
+      <SimpleHeader back={{ href: '/auth/domus', label: c.back }} />
 
-      {/* Input file nascosto */}
       <input
         ref={fileInputRef}
         type="file"
@@ -125,13 +129,12 @@ export default function PrimoRicordoPage() {
         aria-hidden="true"
       />
 
-      {/* Contenuto centrato */}
       <div className="flex-1 flex flex-col items-center justify-center px-11 pb-8 text-center">
-
-        {/* Domanda – il cuore della schermata */}
         <h1 className="font-serif text-[22px] font-normal italic text-casa-dark leading-[1.4] max-w-[280px]">
           {c.title.split('\n').map((line, i) => (
-            <span key={i} className="block">{line}</span>
+            <span key={i} className="block">
+              {line}
+            </span>
           ))}
         </h1>
 
@@ -139,7 +142,6 @@ export default function PrimoRicordoPage() {
           {c.subtitle}
         </p>
 
-        {/* Pulsante di registrazione */}
         <button
           type="button"
           onClick={handleRecordClick}
@@ -148,9 +150,10 @@ export default function PrimoRicordoPage() {
           className={`
             w-[148px] h-[148px] rounded-full flex flex-col items-center justify-center gap-[10px]
             border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-casa-gold
-            ${isUploading
-              ? 'opacity-50 cursor-not-allowed border-casa-border bg-casa-gold-light'
-              : 'border-casa-border bg-casa-gold-light hover:bg-casa-gold hover:border-casa-gold cursor-pointer group'
+            ${
+              isUploading
+                ? 'opacity-50 cursor-not-allowed border-casa-border bg-casa-gold-light'
+                : 'border-casa-border bg-casa-gold-light hover:bg-casa-gold hover:border-casa-gold cursor-pointer group'
             }
           `}
           style={{ borderWidth: '1.5px' }}
@@ -184,14 +187,12 @@ export default function PrimoRicordoPage() {
           {c.record.note}
         </p>
 
-        {/* Divisore */}
         <div className="w-full flex items-center gap-3 mb-8">
           <div className="flex-1 h-px bg-casa-border" />
           <span className="font-body text-[12px] text-casa-light">{c.or}</span>
           <div className="flex-1 h-px bg-casa-border" />
         </div>
 
-        {/* Upload alternativo */}
         <div className="w-full max-w-[300px]">
           <Button
             variant="quiet"
@@ -203,7 +204,6 @@ export default function PrimoRicordoPage() {
           </Button>
         </div>
 
-        {/* Errore */}
         {uploadState === 'error' && errorMessage && (
           <div className="mt-6 w-full max-w-[300px]">
             <ErrorMessage message={errorMessage} />
