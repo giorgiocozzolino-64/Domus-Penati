@@ -266,28 +266,31 @@ export default async function GalleryPage() {
         <section className="px-10 pb-10">
           <div className="grid grid-cols-2 gap-3 mb-8">
             {memoryCards.map(({ memory, signedUrl }) => (
-              <article
+              <Link
                 key={memory.id}
-                className="rounded-[10px] overflow-hidden bg-white/40 border border-casa-border"
+                href={`/auth/domus/ricordi/${memory.id}`}
+                className="block rounded-[10px] overflow-hidden bg-white/40 border border-casa-border hover:border-casa-gold transition-colors duration-200"
               >
-                <div
-                  className="relative overflow-hidden bg-casa-gold-light"
-                  style={{ aspectRatio: '0.82' }}
-                >
-                  <MemoryPreview memory={memory} fileUrl={signedUrl} />
-                </div>
+                <article>
+                  <div
+                    className="relative overflow-hidden bg-casa-gold-light"
+                    style={{ aspectRatio: '0.82' }}
+                  >
+                    <MemoryPreview memory={memory} fileUrl={signedUrl} />
+                  </div>
 
-                <div className="p-3">
-                  <p className="font-body text-[14px] text-casa-dark leading-[1.35] truncate">
-                    {memory.title}
-                  </p>
+                  <div className="p-3">
+                    <p className="font-body text-[14px] text-casa-dark leading-[1.35] truncate">
+                      {memory.title}
+                    </p>
 
-                  <p className="mt-1 font-ui text-[10px] tracking-[0.06em] uppercase text-casa-light">
-                    {getTypeLabel(memory.memory_type)} ·{' '}
-                    {formatDate(memory.date_of_memory ?? memory.created_at)}
-                  </p>
-                </div>
-              </article>
+                    <p className="mt-1 font-ui text-[10px] tracking-[0.06em] uppercase text-casa-light">
+                      {getTypeLabel(memory.memory_type)} ·{' '}
+                      {formatDate(memory.date_of_memory ?? memory.created_at)}
+                    </p>
+                  </div>
+                </article>
+              </Link>
             ))}
 
             <Link
