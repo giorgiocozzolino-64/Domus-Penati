@@ -21,6 +21,10 @@ type MembershipData = {
   family_id: string | null
 }
 
+type MemoryData = {
+  id: string
+}
+
 export default function PrimoRicordoPage() {
   const c = copy.firstMemory
   const router = useRouter()
@@ -74,24 +78,60 @@ export default function PrimoRicordoPage() {
         throw new Error('Famiglia non trovata')
       }
 
+      const fileExtension = file.name.split('.').pop()
+      const storagePath = `${membership.family_id}/${user.id}/${Date.now()}.${fileExtension}`
+
+      const { error: storageError } = await supabase.storage
+        .from('memories')
+        .upload(storagePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (storageError) {
+        throw storageError
+      }
+
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '')
 
-      const { error: dbError } = await supabase.from('memories').insert({
-        family_id: membership.family_id,
-        author_id: user.id,
-        title: cleanTitle,
-        description: null,
-        memory_type: memoryType,
-        visibility: 'family',
-        date_of_memory: new Date().toISOString().slice(0, 10),
+      const { data: memoryData, error: memoryError } = await supabase
+        .from('memories')
+        .insert({
+          family_id: membership.family_id,
+          author_id: user.id,
+          title: cleanTitle,
+          description: null,
+          memory_type: memoryType,
+          visibility: 'family',
+          date_of_memory: new Date().toISOString().slice(0, 10),
+        })
+        .select('id')
+        .single()
+
+      if (memoryError) {
+        throw memoryError
+      }
+
+      const memory = memoryData as MemoryData | null
+
+      if (!memory?.id) {
+        throw new Error('Ricordo non creato')
+      }
+
+      const { error: fileError } = await supabase.from('memory_files').insert({
+        memory_id: memory.id,
+        file_url: storagePath,
+        file_type: memoryType,
+        mime_type: file.type || null,
+        file_size: file.size,
       })
 
-      if (dbError) {
-        throw dbError
+      if (fileError) {
+        throw fileError
       }
 
       setUploadState('success')
-      setTimeout(() => router.push('/domus/ricordi'), 800)
+      setTimeout(() => router.push('/auth/domus/ricordi'), 800)
     } catch (err) {
       console.error('Errore creazione ricordo:', err)
       setUploadState('error')
