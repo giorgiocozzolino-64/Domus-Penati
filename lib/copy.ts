@@ -60,6 +60,7 @@ export const copy = {
       "Ogni famiglia ha un momento da cui tutto comincia. Scrivi il primo ricordo della tua Domus.",
     cta: "Salva il ricordo",
     back: "Torna alla Domus",
+    or: "oppure",
 
     record: {
       label: "Registra un ricordo vocale",
