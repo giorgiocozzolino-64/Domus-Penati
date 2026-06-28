@@ -293,6 +293,15 @@ export default async function MemoryDetailPage({ params }: PageProps) {
             </p>
           )}
 
+          <div className="mt-8">
+            <Link
+              href={`/auth/domus/ricordi/${memory.id}/edit`}
+              className="inline-flex w-full items-center justify-center font-body text-[15px] font-medium tracking-wide text-casa-cream bg-casa-gold hover:bg-casa-gold-dark rounded-button px-6 py-[14px] transition-colors duration-200"
+            >
+              Modifica ricordo
+            </Link>
+          </div>
+
           <div className="mt-10 border-t border-casa-border pt-6">
             <p className="font-serif text-[18px] text-casa-dark">
               Prossimi dettagli
